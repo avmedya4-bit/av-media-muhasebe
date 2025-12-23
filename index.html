@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AV Media Ödeme Takip</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: #fff;
+}
+
+header {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  padding: 20px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.totals {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+}
+
+.total-box {
+  flex: 1;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.red { background: #7f1d1d; }
+.green { background: #14532d; }
+
+.total-box span {
+  display: block;
+  margin-top: 5px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.container { padding: 15px; }
+
+.add-box, .report-box {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+}
+
+button {
+  background: #22c55e;
+  font-weight: bold;
+}
+
+.card {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card.red { border-left: 5px solid #ef4444; }
+.card.green { border-left: 5px solid #22c55e; }
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: #fff;
+}
+</style>
+</head>
+
+<body>
+
+<header>AV MEDIA – ÖDEME TAKİP</header>
+
+<div class="totals">
+  <div class="total-box red">
+    Alınacak
+    <span id="pendingTotal">0 ₺</span>
+  </div>
+  <div class="total-box green">
+    Alınan
+    <span id="paidTotal">0 ₺</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="add-box">
+    <input id="name" placeholder="İş / Müşteri Adı">
+    <input id="amount" type="number" placeholder="Tutar (₺)">
+    <select id="month"></select>
+    <button onclick="addPayment()">Ödeme Ekle</button>
+  </div>
+
+  <div class="report-box">
+    <strong>📊 Seçilen Ay Toplamı:</strong>
+    <div id="monthReport">0 ₺</div>
+  </div>
+
+  <h3>🔴 Alınacak</h3>
+  <div id="pending"></div>
+
+  <h3>🟢 Alınan</h3>
+  <div id="paid"></div>
+
+</div>
+
+<script>
+let pendingSum = 0;
+let paidSum = 0;
+let monthData = {};
+
+const monthSelect = document.getElementById("month");
+const months = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+
+months.forEach((m,i)=>{
+  const o = document.createElement("option");
+  o.value = i;
+  o.text = m;
+  monthSelect.appendChild(o);
+});
+monthSelect.value = new Date().getMonth();
+
+function updateTotals(){
+  pendingTotal.innerText = pendingSum + " ₺";
+  paidTotal.innerText = paidSum + " ₺";
+  updateMonthReport();
+}
+
+function updateMonthReport(){
+  const m = monthSelect.value;
+  monthReport.innerText = (monthData[m] || 0) + " ₺";
+}
+
+function addPayment(){
+  const name = nameInput.value;
+  const amount = parseInt(amountInput.value);
+  const m = monthSelect.value;
+
+  if(!name || !amount) return alert("Eksik bilgi kanka");
+
+  pendingSum += amount;
+  monthData[m] = (monthData[m] || 0) + amount;
+  updateTotals();
+
+  const card = document.createElement("div");
+  card.className = "card red";
+  card.innerHTML = `
+    <strong>${name}</strong>
+    <span>${amount} ₺ (${months[m]})</span>
+    <div class="actions">
+      <button>Ödeme Alındı</button>
+      <button class="delete-btn">Sil</button>
+    </div>`;
+
+  pending.appendChild(card);
+
+  card.querySelector("button").onclick = ()=>{
+    pendingSum -= amount;
+    paidSum += amount;
+    updateTotals();
+    card.classList.replace("red","green");
+    card.querySelector("button").remove();
+    paid.appendChild(card);
+  };
+
+  card.querySelector(".delete-btn").onclick = ()=>{
+    if(card.classList.contains("red")) pendingSum -= amount;
+    else paidSum -= amount;
+    monthData[m] -= amount;
+    updateTotals();
+    card.remove();
+  };
+
+  nameInput.value="";
+  amountInput.value="";
+}
+
+monthSelect.onchange = updateMonthReport;
+
+const nameInput = document.getElementById("name");
+const amountInput = document.getElementById("amount");
+</script>
+
+</body>
+</html>
