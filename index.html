@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ödeme Takip</title>
+
+<style>
+body{margin:0;font-family:Arial;background:#f3f4f6}
+header{background:#111827;color:#fff;padding:15px;text-align:center}
+select,input,button{width:100%;padding:10px;margin-top:8px;font-size:15px}
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:15px}
+.box{background:#fff;padding:12px;border-radius:10px;text-align:center}
+.tabs{display:flex;background:#1f2937}
+.tabs button{flex:1;padding:12px;border:none;color:#fff;background:none}
+.tabs button.active{background:#2563eb}
+.tab{display:none;padding:15px}
+.tab.active{display:block}
+.add{background:#2563eb;color:#fff;border:none;border-radius:8px}
+
+.item{
+  padding:10px;
+  border-radius:8px;
+  margin-top:8px;
+}
+
+.item.alacak{
+  background:#fee2e2;
+  border-left:6px solid #dc2626;
+}
+
+.item.alindi{
+  background:#dcfce7;
+  border-left:6px solid #16a34a;
+}
+
+.status{
+  font-size:13px;
+  font-weight:bold;
+  margin-top:4px;
+}
+
+.status.alacak{color:#b91c1c}
+.status.alindi{color:#166534}
+
+.item button{
+  margin-top:6px;
+  background:#16a34a;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  padding:6px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>Ödeme Takip</h2>
+<select id="month"></select>
+</header>
+
+<div class="summary">
+<div class="box">Alacak<br><b id="alacak">0 ₺</b></div>
+<div class="box">Tahsil<br><b id="tahsil">0 ₺</b></div>
+<div class="box">Eleman<br><b id="eleman">0 ₺</b></div>
+<div class="box">Şirket<br><b id="sirket">0 ₺</b></div>
+<div class="box" style="grid-column:span 2">Net Kâr<br><b id="kar">0 ₺</b></div>
+</div>
+
+<div class="tabs">
+<button class="active" onclick="tab(0)">Ödemeler</button>
+<button onclick="tab(1)">Eleman</button>
+<button onclick="tab(2)">Şirket</button>
+</div>
+
+<!-- ÖDEMELER -->
+<div class="tab active">
+<input id="odemeKisi" placeholder="Kişi / Firma">
+<input id="odemeTutar" placeholder="Tutar">
+<button class="add" onclick="odemeEkle()">Ödeme Ekle</button>
+<div id="odemeList"></div>
+</div>
+
+<!-- ELEMAN -->
+<div class="tab">
+<input id="elemanAd" placeholder="Eleman Adı">
+<input id="elemanTutar" placeholder="Tutar">
+<button class="add" onclick="elemanEkle()">Ekle</button>
+<div id="elemanList"></div>
+</div>
+
+<!-- ŞİRKET -->
+<div class="tab">
+<input id="sirketAciklama" placeholder="Açıklama (Yakıt, Kira...)">
+<input id="sirketTutar" placeholder="Tutar">
+<button class="add" onclick="sirketEkle()">Ekle</button>
+<div id="sirketList"></div>
+</div>
+
+<script>
+const month=document.getElementById("month");
+const now=new Date();
+for(let i=0;i<12;i++){
+ let d=new Date(now.getFullYear(),i);
+ month.innerHTML+=`<option value="${now.getFullYear()}-${i}">
+ ${d.toLocaleString('tr',{month:'long'})}</option>`;
+}
+month.value=`${now.getFullYear()}-${now.getMonth()}`;
+month.onchange=load;
+
+const key=t=>t+"_"+month.value;
+
+function odemeEkle(){
+ let kisi=odemeKisi.value;
+ let tutar=+odemeTutar.value;
+ if(!kisi||!tutar)return;
+ let d=JSON.parse(localStorage.getItem(key("odeme"))||"[]");
+ d.push({kisi,tutar,alindi:false});
+ localStorage.setItem(key("odeme"),JSON.stringify(d));
+ odemeKisi.value=odemeTutar.value="";
+ load();
+}
+
+function odemeAlindi(i){
+ let d=JSON.parse(localStorage.getItem(key("odeme")));
+ d[i].alindi=true;
+ localStorage.setItem(key("odeme"),JSON.stringify(d));
+ load();
+}
+
+function elemanEkle(){
+ let d=JSON.parse(localStorage.getItem(key("eleman"))||"[]");
+ d.push({ad:elemanAd.value,tutar:+elemanTutar.value});
+ localStorage.setItem(key("eleman"),JSON.stringify(d));
+ elemanAd.value=elemanTutar.value="";
+ load();
+}
+
+function sirketEkle(){
+ let d=JSON.parse(localStorage.getItem(key("sirket"))||"[]");
+ d.push({aciklama:sirketAciklama.value,tutar:+sirketTutar.value});
+ localStorage.setItem(key("sirket"),JSON.stringify(d));
+ sirketAciklama.value=sirketTutar.value="";
+ load();
+}
+
+function load(){
+ let alacak=0,tahsil=0,eleman=0,sirket=0;
+ odemeList.innerHTML=elemanList.innerHTML=sirketList.innerHTML="";
+
+ (JSON.parse(localStorage.getItem(key("odeme"))||"[]")).forEach((i,idx)=>{
+   if(i.alindi){tahsil+=i.tutar}else{alacak+=i.tutar}
+   odemeList.innerHTML+=`
+   <div class="item ${i.alindi?"alindi":"alacak"}">
+     ${i.kisi} - ${i.tutar} ₺
+     <div class="status ${i.alindi?"alindi":"alacak"}">
+       ${i.alindi?"Ödeme Alındı":"Alacak"}
+     </div>
+     ${!i.alindi?`<button onclick="odemeAlindi(${idx})">Ödeme Alındı</button>`:""}
+   </div>`;
+ });
+
+ (JSON.parse(localStorage.getItem(key("eleman"))||"[]"))
+ .forEach(i=>{eleman+=i.tutar;elemanList.innerHTML+=`<div class="item">${i.ad} - ${i.tutar} ₺</div>`});
+
+ (JSON.parse(localStorage.getItem(key("sirket"))||"[]"))
+ .forEach(i=>{sirket+=i.tutar;sirketList.innerHTML+=`<div class="item">${i.aciklama} - ${i.tutar} ₺</div>`});
+
+ alacak.textContent=alacak+" ₺";
+ tahsil.textContent=tahsil+" ₺";
+ eleman.textContent=eleman+" ₺";
+ sirket.textContent=sirket+" ₺";
+ kar.textContent=(tahsil-eleman-sirket)+" ₺";
+}
+
+function tab(i){
+ document.querySelectorAll(".tab").forEach((t,j)=>t.classList.toggle("active",i===j));
+ document.querySelectorAll(".tabs button").forEach((b,j)=>b.classList.toggle("active",i===j));
+}
+
+load();
+</script>
+
+</body>
+</html>
