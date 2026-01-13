@@ -3,242 +3,152 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ödeme Takip Sistemi</title>
+<title>Ödeme Takip</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
-}
-
-header {
-  background: #111827;
-  color: #fff;
-  padding: 15px;
-  text-align: center;
-}
-
-.month {
-  margin-top: 10px;
-}
-
-select {
-  padding: 6px;
-  font-size: 16px;
-}
-
-.summary {
-  display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 10px;
-  padding: 15px;
-}
-
-.box {
-  background: white;
-  padding: 12px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,.1);
-}
-
-.box h3 {
-  margin: 0;
-  font-size: 14px;
-  color: #555;
-}
-
-.box p {
-  margin: 5px 0 0;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.tabs {
-  display: flex;
-  background: #1f2933;
-}
-
-.tabs button {
-  flex: 1;
-  padding: 12px;
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 15px;
-}
-
-.tabs button.active {
-  background: #2563eb;
-}
-
-.tab {
-  display: none;
-  padding: 15px;
-}
-
-.tab.active {
-  display: block;
-}
-
-input, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 8px;
-  font-size: 15px;
-}
-
-button.add {
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 8px;
-}
-
-.list {
-  margin-top: 10px;
-}
-
-.item {
-  background: white;
-  padding: 8px;
-  border-radius: 6px;
-  margin-bottom: 6px;
-  display: flex;
-  justify-content: space-between;
-}
+body{margin:0;font-family:Arial;background:#f3f4f6}
+header{background:#111827;color:#fff;padding:15px;text-align:center}
+select,input,button{width:100%;padding:10px;margin-top:8px;font-size:15px}
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:15px}
+.box{background:#fff;padding:12px;border-radius:10px;text-align:center}
+.tabs{display:flex;background:#1f2937}
+.tabs button{flex:1;padding:12px;border:none;color:#fff;background:none}
+.tabs button.active{background:#2563eb}
+.tab{display:none;padding:15px}
+.tab.active{display:block}
+.item{background:#fff;padding:8px;border-radius:6px;margin-top:6px}
+.item button{margin-top:6px;background:#16a34a;color:#fff;border:none;border-radius:6px}
+.add{background:#2563eb;color:#fff;border:none;border-radius:8px}
+.status{font-size:13px;color:#555;margin-top:4px}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h2>Ödeme Takip</h2>
-  <div class="month">
-    <select id="month"></select>
-  </div>
+<h2>Ödeme Takip</h2>
+<select id="month"></select>
 </header>
 
 <div class="summary">
-  <div class="box"><h3>Alacak</h3><p id="alacak">0 ₺</p></div>
-  <div class="box"><h3>Tahsil</h3><p id="tahsil">0 ₺</p></div>
-  <div class="box"><h3>Eleman</h3><p id="eleman">0 ₺</p></div>
-  <div class="box"><h3>Şirket</h3><p id="sirket">0 ₺</p></div>
-  <div class="box" style="grid-column: span 2;">
-    <h3>Net Kâr / Zarar</h3>
-    <p id="kar">0 ₺</p>
-  </div>
+<div class="box">Alacak<br><b id="alacak">0 ₺</b></div>
+<div class="box">Tahsil<br><b id="tahsil">0 ₺</b></div>
+<div class="box">Eleman<br><b id="eleman">0 ₺</b></div>
+<div class="box">Şirket<br><b id="sirket">0 ₺</b></div>
+<div class="box" style="grid-column:span 2">Net Kâr<br><b id="kar">0 ₺</b></div>
 </div>
 
 <div class="tabs">
-  <button onclick="openTab(0)" class="active">Gelir</button>
-  <button onclick="openTab(1)">Alacak</button>
-  <button onclick="openTab(2)">Eleman</button>
-  <button onclick="openTab(3)">Şirket</button>
+<button class="active" onclick="tab(0)">Ödemeler</button>
+<button onclick="tab(1)">Eleman</button>
+<button onclick="tab(2)">Şirket</button>
 </div>
 
+<!-- ÖDEMELER -->
 <div class="tab active">
-  <input id="gelirTutar" placeholder="Tutar">
-  <select id="gelirDurum">
-    <option value="alindi">Alındı</option>
-    <option value="alacak">Alacak</option>
-  </select>
-  <button class="add" onclick="ekle('gelir')">Ekle</button>
-  <div class="list" id="gelirList"></div>
+<input id="odemeKisi" placeholder="Kişi / Firma">
+<input id="odemeTutar" placeholder="Tutar">
+<button class="add" onclick="odemeEkle()">Ödeme Ekle</button>
+<div id="odemeList"></div>
 </div>
 
+<!-- ELEMAN -->
 <div class="tab">
-  <input id="alacakTutar" placeholder="Alacak Tutarı">
-  <button class="add" onclick="ekle('alacak')">Ekle</button>
-  <div class="list" id="alacakList"></div>
+<input id="elemanAd" placeholder="Eleman Adı">
+<input id="elemanTutar" placeholder="Tutar">
+<button class="add" onclick="elemanEkle()">Ekle</button>
+<div id="elemanList"></div>
 </div>
 
+<!-- ŞİRKET -->
 <div class="tab">
-  <input id="elemanAd" placeholder="Eleman Adı">
-  <input id="elemanTutar" placeholder="Tutar">
-  <button class="add" onclick="ekle('eleman')">Ekle</button>
-  <div class="list" id="elemanList"></div>
-</div>
-
-<div class="tab">
-  <input id="sirketAciklama" placeholder="Açıklama (Yakıt, Kira...)">
-  <input id="sirketTutar" placeholder="Tutar">
-  <button class="add" onclick="ekle('sirket')">Ekle</button>
-  <div class="list" id="sirketList"></div>
+<input id="sirketAciklama" placeholder="Açıklama (Yakıt, Kira...)">
+<input id="sirketTutar" placeholder="Tutar">
+<button class="add" onclick="sirketEkle()">Ekle</button>
+<div id="sirketList"></div>
 </div>
 
 <script>
-const monthSel = document.getElementById("month");
-const now = new Date();
+const month=document.getElementById("month");
+const now=new Date();
 for(let i=0;i<12;i++){
-  const d = new Date(now.getFullYear(), i);
-  monthSel.innerHTML += `<option value="${d.getFullYear()}-${i}">${d.toLocaleString('tr',{month:'long'})} ${d.getFullYear()}</option>`;
+ let d=new Date(now.getFullYear(),i);
+ month.innerHTML+=`<option value="${now.getFullYear()}-${i}">${d.toLocaleString('tr',{month:'long'})}</option>`;
 }
-monthSel.value = `${now.getFullYear()}-${now.getMonth()}`;
-monthSel.onchange = load;
+month.value=`${now.getFullYear()}-${now.getMonth()}`;
+month.onchange=load;
 
-function key(t){ return t+"_"+monthSel.value }
+const key=t=>t+"_"+month.value;
 
-function ekle(t){
-  let data = JSON.parse(localStorage.getItem(key(t))||"[]");
-  let tutar = 0, text = "";
+function odemeEkle(){
+ let kisi=odemeKisi.value;
+ let tutar=+odemeTutar.value;
+ if(!kisi||!tutar)return;
+ let d=JSON.parse(localStorage.getItem(key("odeme"))||"[]");
+ d.push({kisi,tutar,alindi:false});
+ localStorage.setItem(key("odeme"),JSON.stringify(d));
+ odemeKisi.value=odemeTutar.value="";
+ load();
+}
 
-  if(t==="gelir"){
-    tutar = +gelirTutar.value;
-    text = gelirDurum.value;
-  }
-  if(t==="alacak"){ tutar = +alacakTutar.value }
-  if(t==="eleman"){ tutar = +elemanTutar.value; text = elemanAd.value }
-  if(t==="sirket"){ tutar = +sirketTutar.value; text = sirketAciklama.value }
+function odemeAlindi(i){
+ let d=JSON.parse(localStorage.getItem(key("odeme")));
+ d[i].alindi=true;
+ localStorage.setItem(key("odeme"),JSON.stringify(d));
+ load();
+}
 
-  if(!tutar) return;
-  data.push({tutar,text});
-  localStorage.setItem(key(t),JSON.stringify(data));
-  load();
+function elemanEkle(){
+ let d=JSON.parse(localStorage.getItem(key("eleman"))||"[]");
+ d.push({ad:elemanAd.value,tutar:+elemanTutar.value});
+ localStorage.setItem(key("eleman"),JSON.stringify(d));
+ elemanAd.value=elemanTutar.value="";
+ load();
+}
+
+function sirketEkle(){
+ let d=JSON.parse(localStorage.getItem(key("sirket"))||"[]");
+ d.push({aciklama:sirketAciklama.value,tutar:+sirketTutar.value});
+ localStorage.setItem(key("sirket"),JSON.stringify(d));
+ sirketAciklama.value=sirketTutar.value="";
+ load();
 }
 
 function load(){
-  let tahsil=0, alacak=0, eleman=0, sirket=0;
+ let alacak=0,tahsil=0,eleman=0,sirket=0;
+ odemeList.innerHTML=elemanList.innerHTML=sirketList.innerHTML="";
 
-  document.querySelectorAll(".list").forEach(l=>l.innerHTML="");
+ (JSON.parse(localStorage.getItem(key("odeme"))||"[]")).forEach((i,idx)=>{
+   if(i.alindi){tahsil+=i.tutar;}
+   else{alacak+=i.tutar;}
+   odemeList.innerHTML+=`
+   <div class="item">
+     ${i.kisi} - ${i.tutar} ₺
+     <div class="status">${i.alindi?"Ödeme Alındı":"Alacak"}</div>
+     ${!i.alindi?`<button onclick="odemeAlindi(${idx})">Ödeme Alındı</button>`:""}
+   </div>`;
+ });
 
-  JSON.parse(localStorage.getItem(key("gelir"))||"[]").forEach(i=>{
-    if(i.text==="alindi") tahsil+=i.tutar;
-    else alacak+=i.tutar;
-    gelirList.innerHTML+=`<div class="item">${i.tutar} ₺</div>`;
-  });
+ (JSON.parse(localStorage.getItem(key("eleman"))||"[]")).forEach(i=>{
+   eleman+=i.tutar;
+   elemanList.innerHTML+=`<div class="item">${i.ad} - ${i.tutar} ₺</div>`;
+ });
 
-  JSON.parse(localStorage.getItem(key("alacak"))||"[]").forEach(i=>{
-    alacak+=i.tutar;
-    alacakList.innerHTML+=`<div class="item">${i.tutar} ₺</div>`;
-  });
+ (JSON.parse(localStorage.getItem(key("sirket"))||"[]")).forEach(i=>{
+   sirket+=i.tutar;
+   sirketList.innerHTML+=`<div class="item">${i.aciklama} - ${i.tutar} ₺</div>`;
+ });
 
-  JSON.parse(localStorage.getItem(key("eleman"))||"[]").forEach(i=>{
-    eleman+=i.tutar;
-    elemanList.innerHTML+=`<div class="item">${i.text} - ${i.tutar} ₺</div>`;
-  });
-
-  JSON.parse(localStorage.getItem(key("sirket"))||"[]").forEach(i=>{
-    sirket+=i.tutar;
-    sirketList.innerHTML+=`<div class="item">${i.text} - ${i.tutar} ₺</div>`;
-  });
-
-  alacakEl.innerText = alacak+" ₺";
-  tahsilEl.innerText = tahsil+" ₺";
-  elemanEl.innerText = eleman+" ₺";
-  sirketEl.innerText = sirket+" ₺";
-  kar.innerText = (tahsil-eleman-sirket)+" ₺";
+ document.getElementById("alacak").textContent=alacak+" ₺";
+ document.getElementById("tahsil").textContent=tahsil+" ₺";
+ document.getElementById("eleman").textContent=eleman+" ₺";
+ document.getElementById("sirket").textContent=sirket+" ₺";
+ document.getElementById("kar").textContent=(tahsil-eleman-sirket)+" ₺";
 }
 
-const alacakEl = document.getElementById("alacak");
-const tahsilEl = document.getElementById("tahsil");
-const elemanEl = document.getElementById("eleman");
-const sirketEl = document.getElementById("sirket");
-
-function openTab(i){
-  document.querySelectorAll(".tab").forEach((t,j)=>t.classList.toggle("active",i===j));
-  document.querySelectorAll(".tabs button").forEach((b,j)=>b.classList.toggle("active",i===j));
+function tab(i){
+ document.querySelectorAll(".tab").forEach((t,j)=>t.classList.toggle("active",i===j));
+ document.querySelectorAll(".tabs button").forEach((b,j)=>b.classList.toggle("active",i===j));
 }
 
 load();
