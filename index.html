@@ -3,217 +3,245 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AV Media Ödeme Takip</title>
+<title>Ödeme Takip Sistemi</title>
 
 <style>
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: #fff;
+  background: #f4f6f8;
 }
 
 header {
-  background: linear-gradient(135deg, #2563eb, #1e40af);
-  padding: 20px;
+  background: #111827;
+  color: #fff;
+  padding: 15px;
   text-align: center;
-  font-size: 20px;
-  font-weight: bold;
 }
 
-.totals {
-  display: flex;
+.month {
+  margin-top: 10px;
+}
+
+select {
+  padding: 6px;
+  font-size: 16px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
   gap: 10px;
   padding: 15px;
 }
 
-.total-box {
-  flex: 1;
-  padding: 15px;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.total-box.red { background: #7f1d1d; }
-.total-box.green { background: #14532d; }
-
-.total-box span {
-  display: block;
-  margin-top: 5px;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.container { padding: 15px; }
-
-.add-box {
-  background: #1e293b;
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-
-.add-box input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-}
-
-.add-box button {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #22c55e;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.section { margin-bottom: 25px; }
-.section h2 { font-size: 18px; }
-
-.card {
-  background: #1e293b;
+.box {
+  background: white;
   padding: 12px;
   border-radius: 10px;
-  margin-bottom: 10px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
 }
 
-.card.red { border-left: 5px solid #ef4444; }
-.card.green { border-left: 5px solid #22c55e; }
+.box h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
 
-.actions {
+.box p {
+  margin: 5px 0 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.tabs {
   display: flex;
-  gap: 10px;
-  margin-top: 8px;
+  background: #1f2933;
 }
 
-.actions button {
+.tabs button {
   flex: 1;
-  padding: 8px;
-  border-radius: 8px;
+  padding: 12px;
+  background: none;
   border: none;
+  color: #fff;
+  font-size: 15px;
 }
 
-.pay-btn { background: #22c55e; }
-.delete-btn { background: #ef4444; color: #fff; }
+.tabs button.active {
+  background: #2563eb;
+}
+
+.tab {
+  display: none;
+  padding: 15px;
+}
+
+.tab.active {
+  display: block;
+}
+
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  font-size: 15px;
+}
+
+button.add {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+.list {
+  margin-top: 10px;
+}
+
+.item {
+  background: white;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
 </style>
 </head>
 
 <body>
 
-<header>AV MEDIA – ÖDEME TAKİP</header>
-
-<div class="totals">
-  <div class="total-box red">
-    Alınacak Ödemeler
-    <span id="pendingTotal">0 ₺</span>
+<header>
+  <h2>Ödeme Takip</h2>
+  <div class="month">
+    <select id="month"></select>
   </div>
-  <div class="total-box green">
-    Alınan Ödemeler
-    <span id="paidTotal">0 ₺</span>
+</header>
+
+<div class="summary">
+  <div class="box"><h3>Alacak</h3><p id="alacak">0 ₺</p></div>
+  <div class="box"><h3>Tahsil</h3><p id="tahsil">0 ₺</p></div>
+  <div class="box"><h3>Eleman</h3><p id="eleman">0 ₺</p></div>
+  <div class="box"><h3>Şirket</h3><p id="sirket">0 ₺</p></div>
+  <div class="box" style="grid-column: span 2;">
+    <h3>Net Kâr / Zarar</h3>
+    <p id="kar">0 ₺</p>
   </div>
 </div>
 
-<div class="container">
+<div class="tabs">
+  <button onclick="openTab(0)" class="active">Gelir</button>
+  <button onclick="openTab(1)">Alacak</button>
+  <button onclick="openTab(2)">Eleman</button>
+  <button onclick="openTab(3)">Şirket</button>
+</div>
 
-  <div class="add-box">
-    <input type="text" id="name" placeholder="İş / Müşteri Adı">
-    <input type="number" id="amount" placeholder="Tutar (₺)">
-    <button onclick="addPayment()">Ödeme Ekle</button>
-  </div>
+<div class="tab active">
+  <input id="gelirTutar" placeholder="Tutar">
+  <select id="gelirDurum">
+    <option value="alindi">Alındı</option>
+    <option value="alacak">Alacak</option>
+  </select>
+  <button class="add" onclick="ekle('gelir')">Ekle</button>
+  <div class="list" id="gelirList"></div>
+</div>
 
-  <div class="section">
-    <h2>🔴 Alınacak Ödemeler</h2>
-    <div id="pending"></div>
-  </div>
+<div class="tab">
+  <input id="alacakTutar" placeholder="Alacak Tutarı">
+  <button class="add" onclick="ekle('alacak')">Ekle</button>
+  <div class="list" id="alacakList"></div>
+</div>
 
-  <div class="section">
-    <h2>🟢 Alınan Ödemeler</h2>
-    <div id="paid"></div>
-  </div>
+<div class="tab">
+  <input id="elemanAd" placeholder="Eleman Adı">
+  <input id="elemanTutar" placeholder="Tutar">
+  <button class="add" onclick="ekle('eleman')">Ekle</button>
+  <div class="list" id="elemanList"></div>
+</div>
 
+<div class="tab">
+  <input id="sirketAciklama" placeholder="Açıklama (Yakıt, Kira...)">
+  <input id="sirketTutar" placeholder="Tutar">
+  <button class="add" onclick="ekle('sirket')">Ekle</button>
+  <div class="list" id="sirketList"></div>
 </div>
 
 <script>
-let payments = JSON.parse(localStorage.getItem("avmedia_payments")) || [];
-
-function save() {
-  localStorage.setItem("avmedia_payments", JSON.stringify(payments));
+const monthSel = document.getElementById("month");
+const now = new Date();
+for(let i=0;i<12;i++){
+  const d = new Date(now.getFullYear(), i);
+  monthSel.innerHTML += `<option value="${d.getFullYear()}-${i}">${d.toLocaleString('tr',{month:'long'})} ${d.getFullYear()}</option>`;
 }
+monthSel.value = `${now.getFullYear()}-${now.getMonth()}`;
+monthSel.onchange = load;
 
-function updateTotals() {
-  let pending = 0;
-  let paid = 0;
+function key(t){ return t+"_"+monthSel.value }
 
-  payments.forEach(p => {
-    if (p.paid) paid += p.amount;
-    else pending += p.amount;
-  });
+function ekle(t){
+  let data = JSON.parse(localStorage.getItem(key(t))||"[]");
+  let tutar = 0, text = "";
 
-  document.getElementById("pendingTotal").innerText = pending + " ₺";
-  document.getElementById("paidTotal").innerText = paid + " ₺";
-}
-
-function render() {
-  document.getElementById("pending").innerHTML = "";
-  document.getElementById("paid").innerHTML = "";
-
-  payments.forEach((p, i) => {
-    const card = document.createElement("div");
-    card.className = "card " + (p.paid ? "green" : "red");
-
-    card.innerHTML = `
-      <strong>${p.name}</strong>
-      <span>${p.amount} ₺</span>
-      <div class="actions">
-        ${p.paid ? "" : "<button class='pay-btn'>Ödeme Alındı</button>"}
-        <button class="delete-btn">Sil</button>
-      </div>
-    `;
-
-    if (!p.paid) {
-      card.querySelector(".pay-btn").onclick = () => {
-        p.paid = true;
-        save();
-        render();
-      };
-      document.getElementById("pending").appendChild(card);
-    } else {
-      document.getElementById("paid").appendChild(card);
-    }
-
-    card.querySelector(".delete-btn").onclick = () => {
-      payments.splice(i, 1);
-      save();
-      render();
-    };
-  });
-
-  updateTotals();
-}
-
-function addPayment() {
-  const name = document.getElementById("name").value;
-  const amount = parseInt(document.getElementById("amount").value);
-
-  if (!name || !amount) {
-    alert("İsim ve tutar gir kanka 😄");
-    return;
+  if(t==="gelir"){
+    tutar = +gelirTutar.value;
+    text = gelirDurum.value;
   }
+  if(t==="alacak"){ tutar = +alacakTutar.value }
+  if(t==="eleman"){ tutar = +elemanTutar.value; text = elemanAd.value }
+  if(t==="sirket"){ tutar = +sirketTutar.value; text = sirketAciklama.value }
 
-  payments.push({ name, amount, paid: false });
-  save();
-  render();
-
-  document.getElementById("name").value = "";
-  document.getElementById("amount").value = "";
+  if(!tutar) return;
+  data.push({tutar,text});
+  localStorage.setItem(key(t),JSON.stringify(data));
+  load();
 }
 
-render();
+function load(){
+  let tahsil=0, alacak=0, eleman=0, sirket=0;
+
+  document.querySelectorAll(".list").forEach(l=>l.innerHTML="");
+
+  JSON.parse(localStorage.getItem(key("gelir"))||"[]").forEach(i=>{
+    if(i.text==="alindi") tahsil+=i.tutar;
+    else alacak+=i.tutar;
+    gelirList.innerHTML+=`<div class="item">${i.tutar} ₺</div>`;
+  });
+
+  JSON.parse(localStorage.getItem(key("alacak"))||"[]").forEach(i=>{
+    alacak+=i.tutar;
+    alacakList.innerHTML+=`<div class="item">${i.tutar} ₺</div>`;
+  });
+
+  JSON.parse(localStorage.getItem(key("eleman"))||"[]").forEach(i=>{
+    eleman+=i.tutar;
+    elemanList.innerHTML+=`<div class="item">${i.text} - ${i.tutar} ₺</div>`;
+  });
+
+  JSON.parse(localStorage.getItem(key("sirket"))||"[]").forEach(i=>{
+    sirket+=i.tutar;
+    sirketList.innerHTML+=`<div class="item">${i.text} - ${i.tutar} ₺</div>`;
+  });
+
+  alacakEl.innerText = alacak+" ₺";
+  tahsilEl.innerText = tahsil+" ₺";
+  elemanEl.innerText = eleman+" ₺";
+  sirketEl.innerText = sirket+" ₺";
+  kar.innerText = (tahsil-eleman-sirket)+" ₺";
+}
+
+const alacakEl = document.getElementById("alacak");
+const tahsilEl = document.getElementById("tahsil");
+const elemanEl = document.getElementById("eleman");
+const sirketEl = document.getElementById("sirket");
+
+function openTab(i){
+  document.querySelectorAll(".tab").forEach((t,j)=>t.classList.toggle("active",i===j));
+  document.querySelectorAll(".tabs button").forEach((b,j)=>b.classList.toggle("active",i===j));
+}
+
+load();
 </script>
 
 </body>
